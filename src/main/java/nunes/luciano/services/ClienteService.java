@@ -17,9 +17,12 @@ import nunes.luciano.domain.Cliente;
 import nunes.luciano.domain.Endereco;
 import nunes.luciano.dto.ClienteDTO;
 import nunes.luciano.dto.ClienteNewDTO;
+import nunes.luciano.enums.Perfil;
 import nunes.luciano.enums.TipoCliente;
 import nunes.luciano.repositories.ClienteRepository;
 import nunes.luciano.repositories.EnderecoRepository;
+import nunes.luciano.security.UserSS;
+import nunes.luciano.services.exceptions.AuthorizationException;
 import nunes.luciano.services.exceptions.DataIntegrityException;
 import nunes.luciano.services.exceptions.ObjectNotFoundException;
 
@@ -34,6 +37,11 @@ public class ClienteService {
 	private EnderecoRepository enderecoRepository;
 
 	public Cliente find(Integer id) {
+		
+		UserSS user = UserService.authenticated();
+		if (user == null || !user.hasRole(Perfil.ADMIN)&&!id.equals(user.getId())) {
+			throw new AuthorizationException("Acesso negado!");
+		}
 		Optional<Cliente> obj = repo.findById(id);
 		return obj.orElseThrow(() -> new ObjectNotFoundException(
 				"Objeto não encontrado! Id: " + id + ", Tipo: " + Cliente.class.getName()));
