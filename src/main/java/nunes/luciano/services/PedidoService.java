@@ -4,8 +4,12 @@ import java.util.Date;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 
+import nunes.luciano.domain.Cliente;
 import nunes.luciano.domain.ItemPedido;
 import nunes.luciano.domain.PagamentoComBoleto;
 import nunes.luciano.domain.Pedido;
@@ -13,6 +17,8 @@ import nunes.luciano.enums.EstadoPagamento;
 import nunes.luciano.repositories.ItemPedidoRepository;
 import nunes.luciano.repositories.PagamentoRepository;
 import nunes.luciano.repositories.PedidoRepository;
+import nunes.luciano.security.UserSS;
+import nunes.luciano.services.exceptions.AuthorizationException;
 import nunes.luciano.services.exceptions.ObjectNotFoundException;
 
 @Service
@@ -69,5 +75,16 @@ public class PedidoService {
 		
 		return obj;
 	}
-
+	
+	public Page<Pedido> finPage(Integer page, Integer linesPerPage, String orderBy, String direction){
+		
+		UserSS user = UserService.authenticated();
+		if (user == null) {
+			throw new AuthorizationException("Acesso negado");
+		}
+		PageRequest pageRequest = PageRequest.of(page, linesPerPage, Direction.valueOf(direction), orderBy);
+		Cliente cliente =  clienteService.find(user.getId());
+		return repo.findByCliente(cliente, pageRequest);
+	}
+	
 }
