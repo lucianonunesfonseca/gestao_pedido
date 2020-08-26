@@ -19,26 +19,24 @@ import nunes.luciano.services.UserService;
 
 @RestController
 @RequestMapping(value = "/auth")
-public class AuthResources {
-	
+public class AuthResource {
 	@Autowired
 	private JWTUtil jwtUtil;
-	
+
 	@Autowired
-	private AuthService authService;
-	
+	private AuthService service;
+
 	@RequestMapping(value = "/refresh_token", method = RequestMethod.POST)
-	public ResponseEntity<Void> refreshToken(HttpServletResponse response){
-		UserSS user  = UserService.authenticated();
+	public ResponseEntity<Void> refreshToken(HttpServletResponse response) {
+		UserSS user = UserService.authenticated();
 		String token = jwtUtil.generateToken(user.getUsername());
-		response.addHeader("Authorization", "Bearer" + token);
-		
+		response.addHeader("Authorization", "Bearer " + token);
 		return ResponseEntity.noContent().build();
 	}
-	
+
 	@RequestMapping(value = "/forgot", method = RequestMethod.POST)
-	public ResponseEntity<Void> forgot(@Valid @RequestBody EmailDTO objDto){
-		authService.sendNewPassword(objDto.getEmail());
+	public ResponseEntity<Void> forgot(@Valid @RequestBody EmailDTO objDto) {
+		service.sendNewPassword(objDto.getEmail());
 		return ResponseEntity.noContent().build();
 	}
 }
